@@ -161,6 +161,8 @@ class Chart extends React.Component {
     document.removeEventListener('mozfullscreenchange', this.onFullscreenExit)
     document.removeEventListener('MSFullscreenChange', this.onFullscreenExit)
     document.removeEventListener('webkitfullscreenchange', this.onFullscreenExit)
+
+    this.chart = null
   }
 
   onHoveredCandle (hoveredCandle) {
