@@ -981,7 +981,12 @@ export default class BitfinexTradingChart {
         const candlePanOffset = panX > 0 ? Math.floor(panX / this.candleWidthPX) : 0
 
         if (candlePanOffset + this.viewportWidthCandles > this.data.length) {
-          this.onLoadMoreCB(this.viewportWidthCandles)
+          const newOnLoadMoreKey = `${(this.data[0] ?? [])[0]}-${(_last(this.data) ?? [])[0]}-${this.dataKey}`
+
+          if (this.onLoadMoreKey !== newOnLoadMoreKey) {
+            this.onLoadMoreCB(this.viewportWidthCandles)
+            this.onLoadMoreKey = newOnLoadMoreKey
+          }
         }
       }
     } else {
