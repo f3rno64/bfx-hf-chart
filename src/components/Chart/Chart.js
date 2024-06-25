@@ -111,8 +111,12 @@ class Chart extends React.Component {
     const { isFullscreen } = this.state
     const {
       candles, width, height, trades, indicators, drawings, candleWidth, orders,
-      position, disableToolbar, disableTopbar, marketLabel
+      position, disableToolbar, disableTopbar, marketLabel, onLoadMore
     } = this.props
+
+    if (onLoadMore !== prevProps.onLoadMore) {
+      this.chart.onLoadMoreCB = onLoadMore
+    }
 
     if (candles !== prevProps.candles || candleWidth !== prevProps.candleWidth) {
       this.chart.updateData(candles, candleWidth, `${marketLabel}${candleWidth}`)
