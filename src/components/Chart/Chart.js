@@ -145,7 +145,8 @@ class Chart extends React.Component {
       (width !== prevProps.width) ||
       (height !== prevProps.height) ||
       (disableToolbar !== prevProps.disableToolbar) ||
-      (disableTopbar !== prevProps.disableTopbar)
+      (disableTopbar !== prevProps.disableTopbar) ||
+      (disableTimeFrames !== prevProps.disableTimeFrames)
     ) {
       if (isFullscreen) {
         this.chart.updateDimensions(window.innerWidth, this.getChartHeight())
@@ -358,7 +359,7 @@ class Chart extends React.Component {
       marketLabel, bgColor = '#000', candleWidth, candles, onTimeFrameChange,
       onAddDrawing, isSyncing, disableToolbar, disableTopbar, onDeleteIndicator,
       disableIndicators, candleLoadingThreshold = 0, extraHeaderComponentsLeft,
-      extraHeaderComponentsRight, showMarketLabel,
+      extraHeaderComponentsRight, showMarketLabel, disableTimeFrames
     } = this.props
 
     const height = isFullscreen ? window.innerHeight : this.props.height
@@ -399,25 +400,27 @@ class Chart extends React.Component {
               </p>
             )}
 
-            <div className='bfxcs__topbar-tfs bfxcs__topbar-section'>
-              <Dropdown
-                label={(
-                  <span>
-                    {candleWidth}
-                    <i className='icon-chevron-down-passive' />
-                  </span>
-                )}
-              >
-                <ul>
-                  {Object.keys(TIME_FRAME_WIDTHS).map(tf => (
-                    <li
-                      key={tf}
-                      onClick={() => onTimeFrameChange && onTimeFrameChange(tf)}
-                    >{tf}</li>
-                  ))}
-                </ul>
-              </Dropdown>
-            </div>
+            {!disableTimeFrames && (
+              <div className='bfxcs__topbar-tfs bfxcs__topbar-section'>
+                <Dropdown
+                  label={(
+                    <span>
+                      {candleWidth}
+                      <i className='icon-chevron-down-passive' />
+                    </span>
+                  )}
+                >
+                  <ul>
+                    {Object.keys(TIME_FRAME_WIDTHS).map(tf => (
+                      <li
+                        key={tf}
+                        onClick={() => onTimeFrameChange && onTimeFrameChange(tf)}
+                      >{tf}</li>
+                    ))}
+                  </ul>
+                </Dropdown>
+              </div>
+            )}
 
             {!disableIndicators && (
               <div className='bfxc__topbar-indicators bfxcs__topbar-section'>
