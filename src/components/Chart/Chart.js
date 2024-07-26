@@ -1,3 +1,4 @@
+import _isFinite from 'lodash/isFinite'
 import React from 'react'
 import { TIME_FRAME_WIDTHS } from 'bfx-hf-util'
 import HFI from 'bfx-hf-indicators'
@@ -57,7 +58,7 @@ class Chart extends React.Component {
   componentDidMount () {
     const {
       width, height, onLoadMore, indicators, candles, candleWidth, trades,
-      config, onTimeFrameChange, orders, position, marketLabel,
+      config, onTimeFrameChange, orders, position, marketLabel, timeFrameWidth
     } = this.props
 
     document.addEventListener('fullscreenchange', this.onFullscreenExit, false)
@@ -84,6 +85,10 @@ class Chart extends React.Component {
       return
     }
 
+    const dataKey = _isFinite(timeFrameWidth)
+      ? `${marketLabel}${timeFrameWidth}`
+      : `${marketLabel}${TIME_FRAME_WIDTHS[candleWidth]}`
+
     this.chart = new ChartLib({
       ohlcCanvas,
       axisCanvas,
@@ -96,8 +101,9 @@ class Chart extends React.Component {
       onHoveredCandleCB: this.onHoveredCandle,
       onUpdateIndicatorSettingsCB: this.onUpdateIndicatorSettings,
       data: candles,
-      dataKey: `${marketLabel}${candleWidth}`,
+      dataKey,
       dataWidth: candleWidth,
+      timeFrameWidth,
       trades,
       orders,
       position,
@@ -111,15 +117,28 @@ class Chart extends React.Component {
     const { isFullscreen } = this.state
     const {
       candles, width, height, trades, indicators, drawings, candleWidth, orders,
-      position, disableToolbar, disableTopbar, marketLabel, onLoadMore
+      position, disableToolbar, disableTopbar, marketLabel, onLoadMore,
+      disableTimeFrames, timeFrameWidth
     } = this.props
 
     if (onLoadMore !== prevProps.onLoadMore) {
       this.chart.onLoadMoreCB = onLoadMore
     }
 
-    if (candles !== prevProps.candles || candleWidth !== prevProps.candleWidth) {
-      this.chart.updateData(candles, candleWidth, `${marketLabel}${candleWidth}`)
+    if (
+      candles !== prevProps.candles ||
+      candleWidth !== prevProps.candleWidth ||
+      timeFrameWidth !== prevProps.timeFrameWidth
+    ) {
+      const width = _isFinite(timeFrameWidth)
+        ? timeFrameWidth
+        : TIME_FRAME_WIDTHS[candleWidth]
+
+      this.chart.updateData(candles, width, `${marketLabel}${width}`)
+    }
+
+    if (timeFrameWidth !== prevProps.timeFrameWidth) {
+      this.chart.dataWidth = timeFrameWidth
     }
 
     if (

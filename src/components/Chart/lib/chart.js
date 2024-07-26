@@ -1,3 +1,4 @@
+import _isUndefined from 'lodash/isUndefined'
 import _isFunction from 'lodash/isFunction'
 import _isFinite from 'lodash/isFinite'
 import _isObject from 'lodash/isObject'
@@ -33,6 +34,7 @@ export default class BitfinexTradingChart {
     position,
     data,
     dataWidth,
+    timeFrameWidth,
     dataKey,
     indicators = [],
     onLoadMoreCB,
@@ -55,7 +57,10 @@ export default class BitfinexTradingChart {
     this.trades = trades
     this.orders = orders
     this.position = position
-    this.dataWidth = TIME_FRAME_WIDTHS[dataWidth]
+    this.dataWidth = _isFinite(timeFrameWidth)
+      ? timeFrameWidth
+      : TIME_FRAME_WIDTHS[dataWidth]
+
     this.onLoadMoreCB = onLoadMoreCB
     this.onHoveredCandleCB = onHoveredCandleCB
     this.onUpdateIndicatorSettingsCB = onUpdateIndicatorSettingsCB
@@ -89,7 +94,7 @@ export default class BitfinexTradingChart {
     this.externalIndicators = 0 // set in updateData()
 
     this.updateIndicators(indicators)
-    this.updateData(data, dataWidth, dataKey)
+    this.updateData(data, this.dataWidth, dataKey)
     this.clipCanvases()
 
     this.clearAll()
@@ -152,12 +157,14 @@ export default class BitfinexTradingChart {
    * Updates internal candle & indicator data sets
    *
    * @param {Array[]} data - candle dataset
-   * @param {number?} dataWidth - candle width, default unchanged
+   * @param {string|number?} dataWidth - candle width string or ms value
    * @param {string} dataKey - optional, resets pan on change
    */
   updateData (data = [], dataWidth, dataKey) {
-    if (dataWidth) {
-      this.dataWidth = TIME_FRAME_WIDTHS[dataWidth]
+    if (!_isUndefined(dataWidth)) {
+      this.dataWidth = _isFinite(dataWidth)
+        ? dataWidth
+        : TIME_FRAME_WIDTHS[dataWidth]
     }
 
     if (this.dataKey && this.dataKey !== dataKey) {
@@ -984,8 +991,8 @@ export default class BitfinexTradingChart {
           const newOnLoadMoreKey = `${(this.data[0] ?? [])[0]}-${(_last(this.data) ?? [])[0]}-${this.dataKey}`
 
           if (this.onLoadMoreKey !== newOnLoadMoreKey) {
-            this.onLoadMoreCB(this.viewportWidthCandles)
             this.onLoadMoreKey = newOnLoadMoreKey
+            this.onLoadMoreCB(this.viewportWidthCandles)
           }
         }
       }
