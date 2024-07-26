@@ -101,6 +101,13 @@ export default class BitfinexTradingChart {
     this.renderAll()
   }
 
+  removeMouseEventListeners() {
+    this.crosshairCanvas.removeEventListener('mouseup', this.onMouseUp)
+    this.crosshairCanvas.removeEventListener('mousedown', this.onMouseDown)
+    this.crosshairCanvas.removeEventListener('mousemove', this.onMouseMove)
+    this.crosshairCanvas.removeEventListener('mouseleave', this.onMouseLeave)
+  }
+
   clipCanvases () {
     const drawingCTX = this.drawingCanvas.getContext('2d')
     const ohlcCTX = this.ohlcCanvas.getContext('2d')

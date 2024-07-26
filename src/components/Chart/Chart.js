@@ -182,6 +182,7 @@ class Chart extends React.Component {
     document.removeEventListener('MSFullscreenChange', this.onFullscreenExit)
     document.removeEventListener('webkitfullscreenchange', this.onFullscreenExit)
 
+    this.chart.removeMouseEventListeners()
     this.chart = null
   }
 
