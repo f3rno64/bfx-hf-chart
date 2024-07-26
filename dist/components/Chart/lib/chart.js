@@ -3,6 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+var _isUndefined2 = require("lodash/isUndefined");
+var _isUndefined3 = _interopRequireDefault(_isUndefined2);
 var _isFunction2 = require("lodash/isFunction");
 var _isFunction3 = _interopRequireDefault(_isFunction2);
 var _isFinite2 = require("lodash/isFinite");
@@ -52,6 +54,7 @@ class BitfinexTradingChart {
     position,
     data,
     dataWidth,
+    timeFrameWidth,
     dataKey,
     indicators = [],
     onLoadMoreCB,
@@ -72,7 +75,7 @@ class BitfinexTradingChart {
     this.trades = trades;
     this.orders = orders;
     this.position = position;
-    this.dataWidth = _bfxHfUtil.TIME_FRAME_WIDTHS[dataWidth];
+    this.dataWidth = (0, _isFinite3.default)(timeFrameWidth) ? timeFrameWidth : _bfxHfUtil.TIME_FRAME_WIDTHS[dataWidth];
     this.onLoadMoreCB = onLoadMoreCB;
     this.onHoveredCandleCB = onHoveredCandleCB;
     this.onUpdateIndicatorSettingsCB = onUpdateIndicatorSettingsCB;
@@ -114,10 +117,16 @@ class BitfinexTradingChart {
     this.externalIndicators = 0; // set in updateData()
 
     this.updateIndicators(indicators);
-    this.updateData(data, dataWidth, dataKey);
+    this.updateData(data, this.dataWidth, dataKey);
     this.clipCanvases();
     this.clearAll();
     this.renderAll();
+  }
+  removeMouseEventListeners() {
+    this.crosshairCanvas.removeEventListener('mouseup', this.onMouseUp);
+    this.crosshairCanvas.removeEventListener('mousedown', this.onMouseDown);
+    this.crosshairCanvas.removeEventListener('mousemove', this.onMouseMove);
+    this.crosshairCanvas.removeEventListener('mouseleave', this.onMouseLeave);
   }
   clipCanvases() {
     const drawingCTX = this.drawingCanvas.getContext('2d');
@@ -163,12 +172,12 @@ class BitfinexTradingChart {
    * Updates internal candle & indicator data sets
    *
    * @param {Array[]} data - candle dataset
-   * @param {number?} dataWidth - candle width, default unchanged
+   * @param {string|number?} dataWidth - candle width string or ms value
    * @param {string} dataKey - optional, resets pan on change
    */
   updateData(data = [], dataWidth, dataKey) {
-    if (dataWidth) {
-      this.dataWidth = _bfxHfUtil.TIME_FRAME_WIDTHS[dataWidth];
+    if (!(0, _isUndefined3.default)(dataWidth)) {
+      this.dataWidth = (0, _isFinite3.default)(dataWidth) ? dataWidth : _bfxHfUtil.TIME_FRAME_WIDTHS[dataWidth];
     }
     if (this.dataKey && this.dataKey !== dataKey) {
       this.onDataReset();
@@ -862,8 +871,8 @@ class BitfinexTradingChart {
         if (candlePanOffset + this.viewportWidthCandles > this.data.length) {
           const newOnLoadMoreKey = `${(this.data[0] ?? [])[0]}-${((0, _last3.default)(this.data) ?? [])[0]}-${this.dataKey}`;
           if (this.onLoadMoreKey !== newOnLoadMoreKey) {
-            this.onLoadMoreCB(this.viewportWidthCandles);
             this.onLoadMoreKey = newOnLoadMoreKey;
+            this.onLoadMoreCB(this.viewportWidthCandles);
           }
         }
       }

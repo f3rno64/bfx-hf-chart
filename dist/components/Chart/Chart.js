@@ -3,6 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+var _isFinite2 = require("lodash/isFinite");
+var _isFinite3 = _interopRequireDefault(_isFinite2);
 var _react = require("react");
 var _react2 = _interopRequireDefault(_react);
 var _bfxHfUtil = require("bfx-hf-util");
@@ -79,7 +81,8 @@ class Chart extends _react2.default.Component {
       onTimeFrameChange,
       orders,
       position,
-      marketLabel
+      marketLabel,
+      timeFrameWidth
     } = this.props;
     document.addEventListener('fullscreenchange', this.onFullscreenExit, false);
     document.addEventListener('mozfullscreenchange', this.onFullscreenExit, false);
@@ -98,6 +101,7 @@ class Chart extends _react2.default.Component {
       console.error('chart library initialized before mount!');
       return;
     }
+    const dataKey = (0, _isFinite3.default)(timeFrameWidth) ? `${marketLabel}${timeFrameWidth}` : `${marketLabel}${_bfxHfUtil.TIME_FRAME_WIDTHS[candleWidth]}`;
     this.chart = new _chart2.default({
       ohlcCanvas,
       axisCanvas,
@@ -110,8 +114,9 @@ class Chart extends _react2.default.Component {
       onHoveredCandleCB: this.onHoveredCandle,
       onUpdateIndicatorSettingsCB: this.onUpdateIndicatorSettings,
       data: candles,
-      dataKey: `${marketLabel}${candleWidth}`,
+      dataKey,
       dataWidth: candleWidth,
+      timeFrameWidth,
       trades,
       orders,
       position,
@@ -137,15 +142,21 @@ class Chart extends _react2.default.Component {
       disableToolbar,
       disableTopbar,
       marketLabel,
-      onLoadMore
+      onLoadMore,
+      disableTimeFrames,
+      timeFrameWidth
     } = this.props;
     if (onLoadMore !== prevProps.onLoadMore) {
       this.chart.onLoadMoreCB = onLoadMore;
     }
-    if (candles !== prevProps.candles || candleWidth !== prevProps.candleWidth) {
-      this.chart.updateData(candles, candleWidth, `${marketLabel}${candleWidth}`);
+    if (candles !== prevProps.candles || candleWidth !== prevProps.candleWidth || timeFrameWidth !== prevProps.timeFrameWidth) {
+      const width = (0, _isFinite3.default)(timeFrameWidth) ? timeFrameWidth : _bfxHfUtil.TIME_FRAME_WIDTHS[candleWidth];
+      this.chart.updateData(candles, width, `${marketLabel}${width}`);
     }
-    if (width !== prevProps.width || height !== prevProps.height || disableToolbar !== prevProps.disableToolbar || disableTopbar !== prevProps.disableTopbar) {
+    if (timeFrameWidth !== prevProps.timeFrameWidth) {
+      this.chart.dataWidth = timeFrameWidth;
+    }
+    if (width !== prevProps.width || height !== prevProps.height || disableToolbar !== prevProps.disableToolbar || disableTopbar !== prevProps.disableTopbar || disableTimeFrames !== prevProps.disableTimeFrames) {
       if (isFullscreen) {
         this.chart.updateDimensions(window.innerWidth, this.getChartHeight());
       } else {
@@ -173,6 +184,7 @@ class Chart extends _react2.default.Component {
     document.removeEventListener('mozfullscreenchange', this.onFullscreenExit);
     document.removeEventListener('MSFullscreenChange', this.onFullscreenExit);
     document.removeEventListener('webkitfullscreenchange', this.onFullscreenExit);
+    this.chart.removeMouseEventListeners();
     this.chart = null;
   }
   onHoveredCandle(hoveredCandle) {
@@ -352,7 +364,8 @@ class Chart extends _react2.default.Component {
       candleLoadingThreshold = 0,
       extraHeaderComponentsLeft,
       extraHeaderComponentsRight,
-      showMarketLabel
+      showMarketLabel,
+      disableTimeFrames
     } = this.props;
     const height = isFullscreen ? window.innerHeight : this.props.height;
     const width = isFullscreen ? window.innerWidth : this.props.width;
@@ -380,7 +393,7 @@ class Chart extends _react2.default.Component {
       className: "bfxc__topbar"
     }, extraHeaderComponentsLeft, showMarketLabel && /*#__PURE__*/_react2.default.createElement("p", {
       className: "bfxcs__topbar-market"
-    }, marketLabel), /*#__PURE__*/_react2.default.createElement("div", {
+    }, marketLabel), !disableTimeFrames && /*#__PURE__*/_react2.default.createElement("div", {
       className: "bfxcs__topbar-tfs bfxcs__topbar-section"
     }, /*#__PURE__*/_react2.default.createElement(_Dropdown2.default, {
       label: /*#__PURE__*/_react2.default.createElement("span", null, candleWidth, /*#__PURE__*/_react2.default.createElement("i", {
